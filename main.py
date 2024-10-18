@@ -80,5 +80,5 @@ async def delete_task(id):
     postgres_delete = f"DELETE FROM Task WHERE id = '{id}'"
     cursor.execute(postgres_delete)
     connection.commit()
-    return {"ok":True}
+    return {"ok":True1}
 
