@@ -31,6 +31,9 @@ postgres_insert_query = """ INSERT INTO Project (ID, Name, Description, Start_da
 postgres_insert_task = """ INSERT INTO Task (ID, Name, Description, Start_date, End_date, id_project)
                                        VALUES (%s,%s,%s,%s,%s,%s)"""
 
+postgres_insert_user = """ INSERT INTO User_ (ID, Name, Description, Phone_number)
+                                       VALUES (%s,%s,%s,%s)"""
+
 class SProjectAdd(BaseModel):
     id: int
     name: str
@@ -78,6 +81,29 @@ async def add_task(task:Annotated[STaskAdd, Depends()],):
 @app.delete("/delete_task")
 async def delete_task(id):
     postgres_delete = f"DELETE FROM Task WHERE id = '{id}'"
+    cursor.execute(postgres_delete)
+    connection.commit()
+    return {"ok":True}
+
+class SUser(BaseModel):
+    id: int
+    name: str
+    phone_number: int
+    description: Optional[str] = None
+
+users = []
+
+@app.post("/registr_user")
+async def registr_user(user:Annotated[SUser, Depends()],):
+    user_add = (user.id, user.name, user.description, user.phone_number)
+    cursor.execute(postgres_insert_user, user_add)
+    connection.commit()
+    users.append(user)
+    return {"ok":True}
+
+@app.delete("/delete_user")
+async def delete_user(id):
+    postgres_delete = f"DELETE FROM User_ WHERE id = '{id}'"
     cursor.execute(postgres_delete)
     connection.commit()
     return {"ok":True}
