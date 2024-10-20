@@ -14,7 +14,7 @@ app = FastAPI(title="PlanPro")
 connection = psycopg2.connect(
             database="PlanPro",
             user='postgres',
-            password='5678',
+            password='password',
             host='127.0.0.1',
             port='5434',
         )
