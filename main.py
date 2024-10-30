@@ -8,6 +8,12 @@ import psycopg2
 import os
 from contextlib import asynccontextmanager
 
+from enum import Enum
+from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationError
+from datetime import date, datetime
+from typing import Optional
+import re
+
 
 app = FastAPI(title="PlanPro")
 
@@ -113,11 +119,20 @@ async def update_done_task(task:Annotated[SPUTTask, Depends()],):
 
 class SUser(BaseModel):
     id: int
-    name: str
-    phone_number: int
+    name: str = Field(default=..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
+    phone_number:  str = Field(default=..., description="Номер телефона в международном формате, начинающийся с '+'")
     description: Optional[str] = None
 
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, values: str) -> str:
+        if not re.match(r'^\+\d{1,15}$', values):
+            raise ValueError('Номер телефона должен начинаться с "+" и содержать от 1 до 15 цифр')
+        return values
+
 users = []
+
+
 
 @app.post("/registr_user")
 async def registr_user(user:Annotated[SUser, Depends()],):
@@ -133,5 +148,6 @@ async def delete_user(id):
     cursor.execute(postgres_delete)
     connection.commit()
     return {"ok":True}
+
 
 
