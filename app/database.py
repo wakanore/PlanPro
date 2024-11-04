@@ -5,7 +5,7 @@ from datetime import datetime
 metadata = MetaData()
 
 DB_USER= 'postgres'
-DB_PASSWORD='5678'
+DB_PASSWORD='password'
 DB_HOST='127.0.0.1'
 DB_PORT='5434'
 DB_NAME="PlanPro"
