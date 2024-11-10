@@ -13,14 +13,15 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationErro
 from datetime import date, datetime
 from typing import Optional
 import re
-
+from app.database import engine, project, task
+from sqlalchemy import insert
 
 app = FastAPI(title="PlanPro")
 
 connection = psycopg2.connect(
             database="PlanPro",
             user='postgres',
-            password='5678',
+            password='password',
             host='127.0.0.1',
             port='5434',
         )
@@ -45,8 +46,8 @@ class SProjectAdd(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
-    date_start: Optional[datetime] = None
-    date_end: Optional[datetime] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     done: Optional[bool] = False
 
 class SPUTProject(BaseModel):
@@ -57,11 +58,19 @@ class SPUTProject(BaseModel):
 projects = []
 
 @app.post("/add_project")
-async def add_project(project:Annotated[SProjectAdd, Depends()],):
-    project_add = (project.id, project.name, project.description, project.date_start, project.date_end, project.done)
-    cursor.execute(postgres_insert_query, project_add)
-    connection.commit()
-    projects.append(project)
+async def add_project(projectmodel:Annotated[SProjectAdd, Depends()],):
+    project_add = project.insert().values(
+        id=projectmodel.id,
+        name=projectmodel.name,
+        description=projectmodel.description,
+        start_date=projectmodel.start_date,
+        end_date=projectmodel.end_date,
+        done=projectmodel.done
+    )
+
+    conn = engine.connect()
+    conn.execute(project_add)
+    conn.commit()
     return {"ok":True}
 
 
@@ -84,8 +93,8 @@ class STaskAdd(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
-    date_start: Optional[datetime] = None
-    date_end: Optional[datetime] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     id_project: int
     done: Optional[bool] = False
 
@@ -96,11 +105,22 @@ class SPUTTask(BaseModel):
 tasks = []
 
 @app.post("/add_task")
-async def add_task(task:Annotated[STaskAdd, Depends()],):
-    task_add = (task.id, task.name, task.description, task.date_start, task.date_end, task.id_project, task.done)
-    cursor.execute(postgres_insert_task, task_add)
-    connection.commit()
-    tasks.append(task)
+async def add_task(taskmodel:Annotated[STaskAdd, Depends()],):
+    project_add = task.insert().values(
+        id=taskmodel.id,
+        name=taskmodel.name,
+        description=taskmodel.description,
+        start_date=taskmodel.start_date,
+        end_date=taskmodel.end_date,
+        done=taskmodel.done,
+        id_project=taskmodel.id_project
+    )
+
+    conn = engine.connect()
+    conn.execute(project_add)
+    conn.commit()
+
+
     return {"ok":True}
 
 @app.delete("/delete_task")
