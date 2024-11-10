@@ -1,21 +1,46 @@
-from sqlalchemy import ForeignKey, text, Text
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from database import Base, str_uniq, int_pk, str_null_true
-from datetime import date
+from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from datetime import date, datetime
+import re
 
 
-# создаем модель пользователей
-class Student(Base):
-    id: Mapped[int_pk]
-    full_name: Mapped[str]
-    phone_number: Mapped[str_uniq]
-    description: Mapped[str]
+class SProjectAdd(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    done: Optional[bool] = False
+
+class SPUTProject(BaseModel):
+    id: int
+    done: Optional[bool] = False
 
 
+class STaskAdd(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    id_project: int
+    done: Optional[bool] = False
 
-    def __str__(self):
-        return (f"{self.__class__.__name__}(id={self.id}, "
-                f"name={self.last_name!r})")
+class SPUTTask(BaseModel):
+    id: int
+    done: Optional[bool] = False
 
-    def __repr__(self):
-        return str(self)
+
+class SUser(BaseModel):
+    id: int
+    name: str = Field(default=..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
+    phone_number:  str = Field(default=..., description="Номер телефона в международном формате, начинающийся с '+'")
+    description: Optional[str] = None
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, values: str) -> str:
+        if not re.match(r'^\+\d{1,15}$', values):
+            raise ValueError('Номер телефона должен начинаться с "+" и содержать от 1 до 15 цифр')
+        return values
+
