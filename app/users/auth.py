@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from app.config import get_auth_data
 from fastapi import APIRouter, HTTPException, status
 from app.users.dao import UsersDAO
-from app.users.schemas import SUserRegister
+from app.models import SUserRegister
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
