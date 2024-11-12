@@ -13,6 +13,6 @@ class BaseDAO:
             students = await session.execute(query)
             return students.scalars().all()
 
-class StudentDAO(BaseDAO):
+class UsersDAO(BaseDAO):
     model = SUser
 
