@@ -1,13 +1,11 @@
 from typing import Annotated
-from fastapi import FastAPI, Depends, APIRouter
-import psycopg2
-from app.database import engine, project, task
-from sqlalchemy import insert, delete, update
+from fastapi import  Depends, APIRouter
+from app.database import engine, project, task, users
+from sqlalchemy import  delete, update
+from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, SUserRegister
 
 
-from app.models import SProjectAdd, STaskAdd, SPUTTask, SUser, SPUTProject
-
-router = APIRouter(prefix='/students', tags=['Работа со студентами'])
+router = APIRouter(prefix='/students', tags=['Работа с проектами'])
 
 @router.post("/add_project")
 async def add_project(projectmodel:Annotated[SProjectAdd, Depends()],):
@@ -88,3 +86,17 @@ async def update_done_task(taskmodel:Annotated[SPUTTask, Depends()],):
     conn.execute(s)
     conn.commit()
     return {"ok": True}
+
+@router.post("/register_user/")
+async def add_user(user_model:Annotated[SUserRegister, Depends()],):
+    project_add = users.insert().values(
+        phone_number = user_model.phone_number,
+        name=user_model.name,
+        password = user_model.password,
+        description=user_model.description
+    )
+
+    conn = engine.connect()
+    conn.execute(project_add)
+    conn.commit()
+    return {"ok":True}
