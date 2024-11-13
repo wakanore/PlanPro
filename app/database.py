@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine, MetaData, Table, Integer, String, \
-    Column, DateTime, ForeignKey, Numeric, CheckConstraint, Boolean
+    Column, DateTime, ForeignKey, Boolean
 from datetime import datetime
+from sqlalchemy.orm import sessionmaker
+
 
 metadata = MetaData()
 
@@ -16,7 +18,15 @@ engine = create_engine(DATABASE_URL)
 
 
 
-Project = Table('Project', metadata,
+local_session = sessionmaker(autoflush=False,
+                             autocommit=False, bind=engine)
+
+
+db = local_session()
+
+
+
+project = Table('project', metadata,
     Column('id', Integer(), primary_key=True),
     Column('name', String(100)),
     Column('description', String(1000)),
@@ -26,30 +36,32 @@ Project = Table('Project', metadata,
 )
 
 
-Task = Table('Task', metadata,
+task = Table('task', metadata,
     Column('id', Integer(), primary_key=True),
     Column('name', String(200), nullable=False),
     Column('start_date', DateTime(), default=datetime.now),
     Column('end_date', DateTime()),
     Column('description', String(1000)),
     Column('done', Boolean()),
-    Column('id_project', Integer(), ForeignKey('Project.id'))
+    Column('id_project', Integer(), ForeignKey('project.id'))
 )
 
 
-Users = Table('Users', metadata,
+users = Table('users', metadata,
     Column('id', Integer(), primary_key=True),
     Column('name', String(100)),
+    Column('password', String(1000)),
     Column('phone_number', String(20)),
     Column('description', String(1000))
 
 )
 
 
-Users_projects = Table('Users_projects', metadata,
-    Column('id_project', ForeignKey('Project.id')),
-    Column('id_user', ForeignKey('Users.id'))
+users_projects = Table('users_projects', metadata,
+    Column('id_project', ForeignKey('project.id')),
+    Column('id_user', ForeignKey('users.id'))
 )
 
 
 metadata.create_all(engine)
+
