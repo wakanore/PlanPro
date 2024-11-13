@@ -31,7 +31,7 @@ router = APIRouter(prefix='/auth', tags=['Auth'])
 
 @router.post("/register/")
 async def register_user(user_data: SUserRegister) -> dict:
-    user = await UsersDAO.find_one_or_none(email=user_data.email)
+    user = await UsersDAO.find_one_or_none(phone_number=user_data.phone_number)
     if user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
