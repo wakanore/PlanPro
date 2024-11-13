@@ -1,13 +1,11 @@
 from typing import Annotated
-
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta, timezone
 from app.config import get_auth_data
-from fastapi import APIRouter, HTTPException, status, Depends
-from app.users.dao import UsersDAO
+from fastapi import APIRouter, Depends
 from app.models import SUserRegister
-from app.database import engine, project, task, users
+from app.database import engine, users
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
