@@ -1,6 +1,5 @@
 from app.database import users
-from app.models import SUser
-from sqlalchemy import async_session_maker, select
+from sqlalchemy import async_session_maker
 from sqlalchemy.future import select
 from app.models import SUser
 
@@ -13,6 +12,6 @@ class BaseDAO:
             students = await session.execute(query)
             return students.scalars().all()
 
-class StudentDAO(BaseDAO):
+class UsersDAO(BaseDAO):
     model = SUser
 
