@@ -1,13 +1,12 @@
 from sqlalchemy import create_engine, MetaData, Table, Integer, String, \
     Column, DateTime, ForeignKey, Boolean
 from datetime import datetime
-from sqlalchemy.orm import sessionmaker
-
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 metadata = MetaData()
 
 DB_USER= 'postgres'
-DB_PASSWORD='password'
+DB_PASSWORD='5678'
 DB_HOST='127.0.0.1'
 DB_PORT='5434'
 DB_NAME="PlanPro"
@@ -23,6 +22,8 @@ local_session = sessionmaker(autoflush=False,
 
 
 db = local_session()
+
+Base = declarative_base()
 
 
 
@@ -64,4 +65,3 @@ users_projects = Table('users_projects', metadata,
 
 
 metadata.create_all(engine)
-
