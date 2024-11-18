@@ -95,7 +95,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
 
-from pydantic import BaseModel
 
 class UserBase(BaseModel):
     username: str
