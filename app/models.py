@@ -3,8 +3,6 @@ from pydantic import BaseModel, Field, field_validator
 from datetime import  datetime
 import re
 
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import declarative_base
 
 
 class SProjectAdd(BaseModel):
@@ -34,18 +32,20 @@ class SPUTTask(BaseModel):
     done: Optional[bool] = False
 
 
-class SUser(BaseModel):
-    name: str = Field(default=..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
-    phone_number:  str = Field(default=..., description="Номер телефона в международном формате, начинающийся с '+'")
-    description: Optional[str] = None
+from sqlalchemy import text
+from sqlalchemy.orm import Mapped, mapped_column
+from app.database import Base, str_uniq, int_pk
 
-    @field_validator("phone_number")
-    @classmethod
-    def validate_phone_number(cls, values: str) -> str:
-        if not re.match(r'^\+\d{1,15}$', values):
-            raise ValueError('Номер телефона должен начинаться с "+" и содержать от 1 до 15 цифр')
-        return values
 
+class User(Base):
+    id: Mapped[int_pk]
+    phone_number: Mapped[str]
+    name: Mapped[str_uniq]
+    description: Mapped[str]
+    password: Mapped[str]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id})"
 
 class SUserRegister(BaseModel):
     password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
@@ -60,54 +60,10 @@ class SUserRegister(BaseModel):
             raise ValueError('Номер телефона должен начинаться с "+" и содержать от 5 до 15 цифр')
         return values
 
+class SUserAuth(BaseModel):
+    phone_number: str = Field(..., description="Номер телефона в международном формате, начинающийся с '+'")
+    password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
 
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-
-
-class UserBase(BaseModel):
-    username: str
-
-class UserCreate(UserBase):
-    password: str
-
-class UserResponse(UserBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
-
-
-
-class UserBase(BaseModel):
-    username: str
-
-class UserCreate(UserBase):
-    password: str
-
-class User(UserBase):
-    id: int
-    is_active: bool
-
-    class Config:
-        orm_mode = True
 
 
 
