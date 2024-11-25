@@ -1,21 +1,28 @@
-from sqlalchemy import create_engine, MetaData, Table, Integer, String, \
-    Column, DateTime, ForeignKey, Boolean
+from typing import Annotated
+from sqlalchemy import MetaData, Table, Integer, String, Column, DateTime, ForeignKey, Boolean, func
 from datetime import datetime
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker, mapped_column, DeclarativeBase, declared_attr, Mapped
+import sqlalchemy as sqlalchemy_package
 
 metadata = MetaData()
 
-DB_USER= 'postgres'
+DB_USER= "postgres"
 DB_PASSWORD='5678'
 DB_HOST='127.0.0.1'
 DB_PORT='5434'
 DB_NAME="PlanPro"
 
-DATABASE_URL = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+str_uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
+int_pk = Annotated[int, mapped_column(primary_key=True)]
+created_at = Annotated[datetime, mapped_column(server_default=func.now())]
+updated_at = Annotated[datetime, mapped_column(server_default=func.now(), onupdate=datetime.now)]
 
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 
+engine = create_async_engine(DATABASE_URL)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 local_session = sessionmaker(autoflush=False,
                              autocommit=False, bind=engine)
@@ -23,7 +30,17 @@ local_session = sessionmaker(autoflush=False,
 
 db = local_session()
 
-Base = declarative_base()
+#Base = declarative_base()
+
+class Base(AsyncAttrs, DeclarativeBase):
+    __abstract__ = True
+
+    @declared_attr.directive
+    def __tablename__(cls) -> str:
+        return f"{cls.__name__.lower()}s"
+
+    created_at: Mapped[created_at]
+    updated_at: Mapped[updated_at]
 
 
 
@@ -64,4 +81,4 @@ users_projects = Table('users_projects', metadata,
 )
 
 
-metadata.create_all(engine)
+
