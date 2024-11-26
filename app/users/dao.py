@@ -1,10 +1,8 @@
-from select import select
+from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import update as sqlalchemy_update, delete as sqlalchemy_delete
 from app.database import async_session_maker
 from app.models import User
-
-
 
 
 class BaseDAO:
@@ -27,7 +25,7 @@ class BaseDAO:
             return result.scalar_one_or_none()
 
     @classmethod
-    async def find_one_or_none(cls, **filter_by ):
+    async def find_one_or_none(cls, **filter_by):
         """
         Асинхронно находит и возвращает один экземпляр модели по указанным критериям или None.
 
@@ -162,3 +160,4 @@ class BaseDAO:
 
 class UsersDAO(BaseDAO):
     model = User
+
