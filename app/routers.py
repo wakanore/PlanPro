@@ -1,7 +1,5 @@
 from typing import Annotated
-
 from fastapi import  Response
-
 from app.database import engine, project, task
 from sqlalchemy import  delete, update
 from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, User, SUserAuth
