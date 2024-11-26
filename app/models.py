@@ -1,8 +1,10 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
-from datetime import  datetime
+from datetime import datetime
+from sqlalchemy.orm import Mapped
 import re
 
+from app.database import Base, str_uniq, int_pk
 
 
 class SProjectAdd(BaseModel):
@@ -32,10 +34,6 @@ class SPUTTask(BaseModel):
     done: Optional[bool] = False
 
 
-from sqlalchemy import text
-from sqlalchemy.orm import Mapped, mapped_column
-from app.database import Base, str_uniq, int_pk
-
 
 class User(Base):
     id: Mapped[int_pk]
@@ -63,6 +61,7 @@ class SUserRegister(BaseModel):
 class SUserAuth(BaseModel):
     phone_number: str = Field(..., description="Номер телефона в международном формате, начинающийся с '+'")
     password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
+
 
 
 
