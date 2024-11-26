@@ -8,7 +8,7 @@ import sqlalchemy as sqlalchemy_package
 metadata = MetaData()
 
 DB_USER= "postgres"
-DB_PASSWORD='5678'
+DB_PASSWORD='password'
 DB_HOST='127.0.0.1'
 DB_PORT='5434'
 DB_NAME="PlanPro"
@@ -38,9 +38,6 @@ class Base(AsyncAttrs, DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         return f"{cls.__name__.lower()}s"
-
-    created_at: Mapped[created_at]
-    updated_at: Mapped[updated_at]
 
 
 
@@ -79,6 +76,5 @@ users_projects = Table('users_projects', metadata,
     Column('id_project', ForeignKey('project.id')),
     Column('id_user', ForeignKey('users.id'))
 )
-
 
 
