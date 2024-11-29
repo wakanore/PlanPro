@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import  Response
 from app.database import engine, project, task
 from sqlalchemy import  delete, update
@@ -128,3 +129,4 @@ async def logout_user(response: Response):
 @router.get("/me/")
 async def get_me(user_data: User = Depends(get_current_user)):
     return user_data
+
