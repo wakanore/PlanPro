@@ -1,25 +1,23 @@
 from email._header_value_parser import get_token
 from http.client import HTTPException
-
 from fastapi import Depends
-from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
+import hashlib
 
 from rich import status
 
 from app.config import get_auth_data
 from app.users.dao import UsersDAO
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return get_password_hash(plain_password)== hashed_password
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
@@ -54,5 +52,6 @@ async def get_current_user(token: str = Depends(get_token)):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
     return user
+
 
 
