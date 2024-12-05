@@ -1,4 +1,5 @@
 from typing import Annotated
+<<<<<<< HEAD
 from fastapi import  Depends, APIRouter
 from app.database import engine, project, task, users
 from sqlalchemy import  delete, update
@@ -12,6 +13,22 @@ from app.models import UserCreate, UserResponse
 from app.models import User
 from app.users.auth import get_password_hash
 from .models import User as UserModel
+=======
+
+from fastapi import  Response
+from app.database import engine, project, task
+from sqlalchemy import  delete, update
+from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, User, SUserAuth
+from fastapi import Depends
+from fastapi import APIRouter, HTTPException, status
+from app.users.auth import get_password_hash, create_access_token, authenticate_user, get_current_user
+from app.users.dao import UsersDAO
+from app.models import SUserRegister
+UserAlreadyExistsException = HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                           detail='Пользователь уже существует')
+IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                                  detail='Неверная почта или пароль')
+>>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
 
 
 router = APIRouter(prefix='/students', tags=['Работа с проектами'])
@@ -96,6 +113,7 @@ async def update_done_task(taskmodel:Annotated[SPUTTask, Depends()],):
     conn.commit()
     return {"ok": True}
 
+<<<<<<< HEAD
 @router.post("/register_user/")
 async def add_user(user_model:Annotated[SUserRegister, Depends()],):
     project_add = users.insert().values(
@@ -144,4 +162,38 @@ def read_users_me(current_user: UserModel = Depends(get_current_user)):
     return current_user
 
 
+=======
+
+
+@router.post("/register/")
+async def register_user(user_data: SUserRegister) -> dict:
+    user = await UsersDAO.find_one_or_none(phone_number=user_data.phone_number)
+    if user:
+        raise UserAlreadyExistsException
+    user_dict = user_data.dict()
+    user_dict['password'] = get_password_hash(user_data.password)
+    await UsersDAO.add(**user_dict)
+    return {'message': f'Вы успешно зарегистрированы!'}
+
+
+@router.post("/login/")
+async def auth_user(response: Response, user_data: SUserAuth):
+    check = await authenticate_user(phone_number=user_data.phone_number, password=user_data.password)
+    if check is None:
+        raise IncorrectEmailOrPasswordException
+    access_token = create_access_token({"sub": str(check.id)})
+    response.set_cookie(key="users_access_token", value=access_token, httponly=True)
+    return {'ok': True, 'access_token': access_token, 'refresh_token': None, 'message': 'Авторизация успешна!'}
+
+
+@router.post("/logout/")
+async def logout_user(response: Response):
+    response.delete_cookie(key="users_access_token")
+    return {'message': 'Пользователь успешно вышел из системы'}
+
+
+@router.get("/me/")
+async def get_me(user_data: User = Depends(get_current_user)):
+    return user_data
+>>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
 

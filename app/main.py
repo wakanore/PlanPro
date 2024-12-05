@@ -10,6 +10,7 @@ app.include_router(router_students)
 
 
 
+<<<<<<< HEAD
 
 @app.get("/")
 def read_root():
@@ -21,3 +22,5 @@ def read_root():
 
 
 
+=======
+>>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5

@@ -1,10 +1,18 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
+<<<<<<< HEAD
 from datetime import  datetime
 import re
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import declarative_base
+=======
+from datetime import datetime
+from sqlalchemy.orm import Mapped
+import re
+
+from app.database import Base, str_uniq, int_pk
+>>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
 
 
 class SProjectAdd(BaseModel):
@@ -34,18 +42,23 @@ class SPUTTask(BaseModel):
     done: Optional[bool] = False
 
 
+<<<<<<< HEAD
 class SUser(BaseModel):
     name: str = Field(default=..., min_length=1, max_length=50, description="Имя студента, от 1 до 50 символов")
     phone_number:  str = Field(default=..., description="Номер телефона в международном формате, начинающийся с '+'")
     description: Optional[str] = None
+=======
+>>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
 
-    @field_validator("phone_number")
-    @classmethod
-    def validate_phone_number(cls, values: str) -> str:
-        if not re.match(r'^\+\d{1,15}$', values):
-            raise ValueError('Номер телефона должен начинаться с "+" и содержать от 1 до 15 цифр')
-        return values
+class User(Base):
+    id: Mapped[int_pk]
+    phone_number: Mapped[str]
+    name: Mapped[str_uniq]
+    description: Mapped[str]
+    password: Mapped[str]
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id})"
 
 class SUserRegister(BaseModel):
     password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
@@ -59,6 +72,14 @@ class SUserRegister(BaseModel):
         if not re.match(r'^\+\d{5,15}$', values):
             raise ValueError('Номер телефона должен начинаться с "+" и содержать от 5 до 15 цифр')
         return values
+
+class SUserAuth(BaseModel):
+    phone_number: str = Field(..., description="Номер телефона в международном формате, начинающийся с '+'")
+    password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
+
+
+
+
 
 
 
