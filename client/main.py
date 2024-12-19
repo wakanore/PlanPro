@@ -38,7 +38,24 @@ class Task(BaseModel):
     id_project: int
     done: Optional[bool] = False
 
+class ProjectADD(BaseModel):
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+class NewUser(BaseModel):
+    phone_number: str
+
+class TaskAdd(BaseModel):
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    id_project: int
+
 tasks = [
+    Task(id=1, name='n', description='d', start_date=date(1990, 1, 1), end_date=date(1991, 1, 1), id_project=1, done=False),
     Task(id=1, name='n', description='d', start_date=date(1990, 1, 1), end_date=date(1991, 1, 1), id_project=1, done=False),
 ]
 
@@ -68,6 +85,11 @@ def users_table() -> list[AnyComponent]:
                         DisplayLookup(field='done', on_click=GoToEvent(url='/login')),
                     ],
                 ),
+                c.Heading(text='Add Project', level=2),
+                c.ModelForm(
+                    model=ProjectADD,
+                    submit_url='/api/registration',
+                )
             ]
         ),
     ]
@@ -84,20 +106,59 @@ def user_profile(user_id: int) -> list[AnyComponent]:
             components=[
                 c.Heading(text=user.name, level=2),
                 c.Link(components=[c.Text(text='Back')], on_click=BackEvent()),
+                c.Heading(text='Tasks', level=2),
                 c.Details(data=user),
+                c.Button(text='Done', on_click=GoToEvent(url='/api/')),
+                c.Button(text='Delete', on_click=GoToEvent(url='/api/')),
+                c.Table(
+                    data=projes,
+                    columns=[
+                        DisplayLookup(field='name', on_click=GoToEvent(url='/tasks/{id}/')),
+                    ],
+                ),
+                c.Heading(text='Add Task', level=3),
+                c.ModelForm(
+                    model=TaskAdd,
+                    submit_url='/api/registration',
+                ),
+                c.Heading(text='Add User', level=3),
+                c.ModelForm(
+                    model=NewUser,
+                    submit_url='/api/registration',
+                )
+            ]
+        ),
+    ]
+
+
+@app.get("/api/tasks/{id_project}/", response_model=FastUI, response_model_exclude_none=True)
+def user_profile(id_project: int) -> list[AnyComponent]:
+    try:
+        task = next(u for u in tasks if u.id == id_project)
+    except StopIteration:
+        raise HTTPException(status_code=404, detail="User not found")
+    return [
+        c.Page(
+            components=[
+                c.Heading(text='Tasks', level=2),
+                c.Link(components=[c.Text(text='Back')], on_click=BackEvent()),
                 c.Table(
                     data=tasks,
                     columns=[
-                        DisplayLookup(field='name', on_click=GoToEvent(url='/registration')),
+                        DisplayLookup(field='name', mode=DisplayMode.date),
                         DisplayLookup(field='description', mode=DisplayMode.date),
                         DisplayLookup(field='start_date', mode=DisplayMode.date),
                         DisplayLookup(field='end_date', mode=DisplayMode.date),
                         DisplayLookup(field='done', mode=DisplayMode.date),
                     ],
                 ),
+                c.Button(text='Done', on_click=GoToEvent(url='/api/')),
+                c.Button(text='Delete', on_click=GoToEvent(url='/api/')),
+
             ]
         ),
     ]
+
 
 
 @app.get("/api/login", response_model=FastUI, response_model_exclude_none=True)
@@ -106,14 +167,17 @@ def get_upload_data_page():
         c.Page(
             components=[
                 c.Heading(text='Login', level=2),
+                c.Button(text='Registration', on_click=GoToEvent(url='/registration')),
                 c.ModelForm(
                     model=UserLogin,
-                    submit_url='/api/login',
+                    submit_url='/api/',
                 ),
-                c.Button(text='Registration', on_click=GoToEvent(url='/registration'))
+
             ]
         ),
     ]
+
+
 
 @app.get("/api/registration", response_model=FastUI, response_model_exclude_none=True)
 def get_upload_data_page():
@@ -123,7 +187,7 @@ def get_upload_data_page():
                 c.Heading(text='Registration', level=2),
                 c.ModelForm(
                     model=UserRegistr,
-                    submit_url='/api/registration',
+                    submit_url='/api/',
                 )
             ]
         ),
