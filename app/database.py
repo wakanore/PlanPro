@@ -1,14 +1,14 @@
 from typing import Annotated
 from sqlalchemy import MetaData, Table, Integer, String, Column, DateTime, ForeignKey, Boolean, func
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, mapped_column, DeclarativeBase, declared_attr, Mapped
 import sqlalchemy as sqlalchemy_package
 
 metadata = MetaData()
 
 DB_USER= "postgres"
-DB_PASSWORD='password'
+DB_PASSWORD='5678'
 DB_HOST='127.0.0.1'
 DB_PORT='5434'
 DB_NAME="PlanPro"
@@ -22,6 +22,8 @@ DATABASE_URL = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT
 
 
 engine = create_async_engine(DATABASE_URL)
+
+
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 local_session = sessionmaker(autoflush=False,
@@ -76,5 +78,6 @@ users_projects = Table('users_projects', metadata,
     Column('id_project', ForeignKey('project.id')),
     Column('id_user', ForeignKey('users.id'))
 )
+
 
 
