@@ -15,6 +15,18 @@ class SProjectAdd(BaseModel):
     end_date: Optional[datetime] = None
     done: Optional[bool] = False
 
+class AddProjectORM(Base):
+    __tablename__ = "project"
+    id: Mapped[int_pk]
+    name: Mapped[str]
+    description: Mapped[str]
+    start_date: Mapped[datetime] = None
+    end_date: Mapped[datetime] = None
+    done: Mapped[bool] = False
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id})"
+
 class SPUTProject(BaseModel):
     id: int
     done: Optional[bool] = False
@@ -28,6 +40,20 @@ class STaskAdd(BaseModel):
     end_date: Optional[datetime] = None
     id_project: int
     done: Optional[bool] = False
+
+
+class AddTaskORM(Base):
+    __tablename__ = "task"
+    id: Mapped[int_pk]
+    name: Mapped[str]
+    description: Mapped[str]
+    start_date: Mapped[datetime] = None
+    end_date: Mapped[datetime] = None
+    id_project: Mapped[int]
+    done: Mapped[bool] = False
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id})"
 
 class SPUTTask(BaseModel):
     id: int
@@ -67,9 +93,19 @@ class UserResponse(BaseModel):
     username: str
     email: Optional[str] = None
 
-class AddUserProject(BaseModel):
+class AddUserProjectORM(Base):
+    __tablename__ = "users_projects"
+    id_project: Mapped[int_pk]
+    id_user: Mapped[int_pk]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id})"
+
+class SAddUSer(BaseModel):
     id_project: int
     id_user: int
+
+
 
 
 
