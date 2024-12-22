@@ -1,9 +1,11 @@
 from typing import Annotated
-
 from fastapi import  Response
-from app.database import engine, project, task, users_projects
-from sqlalchemy import  delete, update
-from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, User, SUserAuth, UserResponse, AddUserProject
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.database import engine, project, task, async_session_maker
+from sqlalchemy import delete, update, insert, values, select
+from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, User, SUserAuth, UserResponse, AddUserProjectORM, \
+    SAddUSer, AddProjectORM, AddTaskORM
 from fastapi import Depends
 from fastapi import APIRouter, HTTPException, status
 from app.users.auth import get_password_hash, create_access_token, authenticate_user, get_current_user
@@ -15,89 +17,105 @@ IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UN
                                                   detail='Неверная почта или пароль')
 
 
-router = APIRouter(prefix='/students', tags=['Работа с проектами'])
+router = APIRouter( tags=['Работа с проектами'])
 
 @router.post("/add_project")
 async def add_project(projectmodel:Annotated[SProjectAdd, Depends()],):
-    project_add = project.insert().values(
-        id=projectmodel.id,
-        name=projectmodel.name,
-        description=projectmodel.description,
-        start_date=projectmodel.start_date,
-        end_date=projectmodel.end_date,
-        done=projectmodel.done
-    )
+    async with async_session_maker() as session:
+        add_project = AddProjectORM(
+            id=projectmodel.id,
+            name=projectmodel.name,
+            description=projectmodel.description,
+            start_date=projectmodel.start_date,
+            end_date=projectmodel.end_date,
+            done=projectmodel.done
+        )
+        session.add(add_project)
+        await session.commit()
+        return {"ok": True}
 
-    conn = engine.connect()
-    conn.execute(project_add)
-    conn.commit()
-    return {"ok":True}
 
 @router.delete("/delete_project")
-async def delete_project(id):
-    s = delete(project).where(
-        project.c.id == id
-    )
-    conn = engine.connect()
-    conn.execute(s)
-    conn.commit()
-
-    return {"ok":True}
+async def delete_project(project_id: int):
+    async with async_session_maker() as session:
+        project_delete = (
+            delete(project)
+            .where(project.c.id == project_id)
+        )
+        result = await session.execute(project_delete)
+        try:
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+        return result.rowcount
 
 @router.put("/update_done_project")
-async def update_done_project(projectmodel:Annotated[SPUTProject, Depends()],):
-    s = update(project).where(
-        project.c.id == projectmodel.id
-    ).values(
-        done=projectmodel.done
-    )
-    conn = engine.connect()
-    conn.execute(s)
-    conn.commit()
-    return {"ok": True}
+async def update_done_project(project_id: int):
+    async with async_session_maker() as session:
+        project_done = (
+            update(project)
+            .values(done=True)
+            .where(project.c.id==project_id)
+        )
+        result = await session.execute(project_done)
+        try:
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+        return result
+
+
 
 
 @router.post("/add_task")
 async def add_task(taskmodel:Annotated[STaskAdd, Depends()],):
-    project_add = task.insert().values(
-        id=taskmodel.id,
-        name=taskmodel.name,
-        description=taskmodel.description,
-        start_date=taskmodel.start_date,
-        end_date=taskmodel.end_date,
-        done=taskmodel.done,
-        id_project=taskmodel.id_project
-    )
+    async with async_session_maker() as session:
+        add_task = AddTaskORM(
+            id=taskmodel.id,
+            name=taskmodel.name,
+            description=taskmodel.description,
+            start_date=taskmodel.start_date,
+            end_date=taskmodel.end_date,
+            done=taskmodel.done,
+            id_project=taskmodel.id_project
+        )
+        session.add(add_task)
+        await session.commit()
+        return {"ok": True}
 
-    conn = engine.connect()
-    conn.execute(project_add)
-    conn.commit()
-
-
-    return {"ok":True}
 
 @router.delete("/delete_task")
-async def delete_task(id):
-    s = delete(task).where(
-        task.c.id == id
-    )
-    conn = engine.connect()
-    conn.execute(s)
-    conn.commit()
-
-    return {"ok":True}
+async def delete_task(task_id: int ):
+    async with async_session_maker() as session:
+        task_delete = (
+            delete(task)
+            .where(task.c.id == task_id)
+        )
+        result = await session.execute(task_delete)
+        try:
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+        return result.rowcount
 
 @router.put("/update_done_task")
-async def update_done_task(taskmodel:Annotated[SPUTTask, Depends()],):
-    s = update(task).where(
-        task.c.id == taskmodel.id
-    ).values(
-        done=taskmodel.done
-    )
-    conn = engine.connect()
-    conn.execute(s)
-    conn.commit()
-    return {"ok": True}
+async def update_done_task(task_id: int):
+    async with async_session_maker() as session:
+        task_done = (
+            update(task)
+            .values(done=True)
+            .where(task.c.id==task_id)
+        )
+        result = await session.execute(task_done)
+        try:
+            await session.commit()
+        except SQLAlchemyError as e:
+            await session.rollback()
+            raise e
+        return result.rowcount
 
 
 
@@ -133,16 +151,11 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@router.post("/add_user_project")
-async def add_project(userprojectmodel:Annotated[AddUserProject, Depends()],):
-    user_project_add = users_projects.insert().values(
-        id_project=userprojectmodel.id_project,
-        id_user=userprojectmodel.id_user,
-    )
 
-    conn = engine.connect()
-    conn.execute(user_project_add)
-    conn.commit()
-    return {"ok":True}
-
-
+@router.post("/add_user_into_project")
+async def add_user_into_project(usermodel:Annotated[SAddUSer, Depends()],):
+    async with async_session_maker() as session:
+        add_user = AddUserProjectORM(id_project=usermodel.id_project, id_user=usermodel.id_user)
+        session.add(add_user)
+        await session.commit()
+        return {"ok": True}
