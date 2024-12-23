@@ -1,16 +1,16 @@
 from typing import Annotated
 from fastapi import  Response
 from sqlalchemy.exc import SQLAlchemyError
-
-from app.database import engine, project, task, async_session_maker
-from sqlalchemy import delete, update, insert, values, select
-from app.models import SProjectAdd, STaskAdd, SPUTTask, SPUTProject, User, SUserAuth, UserResponse, AddUserProjectORM, \
-    SAddUSer, AddProjectORM, AddTaskORM
+from app.database import project, task, async_session_maker
+from sqlalchemy import delete, update
+from app.models import SProjectAdd, STaskAdd, User, SUserAuth, UserResponse, AddUserProjectORM, SAddUSer, AddProjectORM, AddTaskORM
 from fastapi import Depends
 from fastapi import APIRouter, HTTPException, status
 from app.users.auth import get_password_hash, create_access_token, authenticate_user, get_current_user
 from app.users.dao import UsersDAO
 from app.models import SUserRegister
+
+#список возможных ошибок
 UserAlreadyExistsException = HTTPException(status_code=status.HTTP_409_CONFLICT,
                                            detail='Пользователь уже существует')
 IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -19,6 +19,7 @@ IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UN
 
 router = APIRouter( tags=['Работа с проектами'])
 
+#добавление проекта
 @router.post("/add_project")
 async def add_project(projectmodel:Annotated[SProjectAdd, Depends()],):
     async with async_session_maker() as session:
@@ -35,6 +36,7 @@ async def add_project(projectmodel:Annotated[SProjectAdd, Depends()],):
         return {"ok": True}
 
 
+#удаление проекта
 @router.delete("/delete_project")
 async def delete_project(project_id: int):
     async with async_session_maker() as session:
@@ -50,6 +52,8 @@ async def delete_project(project_id: int):
             raise e
         return result.rowcount
 
+
+#отметить проект как готовый
 @router.put("/update_done_project")
 async def update_done_project(project_id: int):
     async with async_session_maker() as session:
@@ -68,7 +72,7 @@ async def update_done_project(project_id: int):
 
 
 
-
+#добавить задачу к проекту
 @router.post("/add_task")
 async def add_task(taskmodel:Annotated[STaskAdd, Depends()],):
     async with async_session_maker() as session:
@@ -86,6 +90,7 @@ async def add_task(taskmodel:Annotated[STaskAdd, Depends()],):
         return {"ok": True}
 
 
+#удалить задачу
 @router.delete("/delete_task")
 async def delete_task(task_id: int ):
     async with async_session_maker() as session:
@@ -101,6 +106,8 @@ async def delete_task(task_id: int ):
             raise e
         return result.rowcount
 
+
+#отметить задачу как готовую
 @router.put("/update_done_task")
 async def update_done_task(task_id: int):
     async with async_session_maker() as session:
@@ -118,7 +125,7 @@ async def update_done_task(task_id: int):
         return result.rowcount
 
 
-
+#регистрация пользователя
 @router.post("/register/")
 async def register_user(user_data: SUserRegister) -> dict:
     user = await UsersDAO.find_one_or_none(phone_number=user_data.phone_number)
@@ -128,6 +135,7 @@ async def register_user(user_data: SUserRegister) -> dict:
     user_dict['password'] = get_password_hash(user_data.password)
     await UsersDAO.add(**user_dict)
     return {'message': f'Вы успешно зарегистрированы!'}
+
 
 
 @router.post("/login/")
@@ -151,7 +159,7 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-
+#добавить пользователя в проект
 @router.post("/add_user_into_project")
 async def add_user_into_project(usermodel:Annotated[SAddUSer, Depends()],):
     async with async_session_maker() as session:
@@ -159,3 +167,4 @@ async def add_user_into_project(usermodel:Annotated[SAddUSer, Depends()],):
         session.add(add_user)
         await session.commit()
         return {"ok": True}
+
