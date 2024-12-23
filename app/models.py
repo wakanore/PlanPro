@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from sqlalchemy.orm import Mapped
 import re
-
 from app.database import Base, str_uniq, int_pk
 
 
@@ -15,6 +14,7 @@ class SProjectAdd(BaseModel):
     end_date: Optional[datetime] = None
     done: Optional[bool] = False
 
+#класс для добавления проекта в бд
 class AddProjectORM(Base):
     __tablename__ = "project"
     id: Mapped[int_pk]
@@ -27,10 +27,6 @@ class AddProjectORM(Base):
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"
 
-class SPUTProject(BaseModel):
-    id: int
-    done: Optional[bool] = False
-
 
 class STaskAdd(BaseModel):
     id: int
@@ -41,7 +37,7 @@ class STaskAdd(BaseModel):
     id_project: int
     done: Optional[bool] = False
 
-
+#класс для добавления задачи в бд
 class AddTaskORM(Base):
     __tablename__ = "task"
     id: Mapped[int_pk]
@@ -55,12 +51,8 @@ class AddTaskORM(Base):
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"
 
-class SPUTTask(BaseModel):
-    id: int
-    done: Optional[bool] = False
 
-
-
+#класс пользователя для работы с бд
 class User(Base):
     id: Mapped[int_pk]
     phone_number: Mapped[str]
@@ -71,6 +63,8 @@ class User(Base):
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"
 
+
+#класс с ограничениями для регистрации пользователя
 class SUserRegister(BaseModel):
     password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
     phone_number: str = Field(..., description="Номер телефона в международном формате, начинающийся с '+'")
@@ -84,15 +78,19 @@ class SUserRegister(BaseModel):
             raise ValueError('Номер телефона должен начинаться с "+" и содержать от 5 до 15 цифр')
         return values
 
+#класс аутентификации пользователя
 class SUserAuth(BaseModel):
     phone_number: str = Field(..., description="Номер телефона в международном формате, начинающийся с '+'")
     password: str = Field(..., min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
 
 
+#модель ответа
 class UserResponse(BaseModel):
     username: str
     email: Optional[str] = None
 
+
+#класс для взаимодействия с бд при добавления пользователя к проекту
 class AddUserProjectORM(Base):
     __tablename__ = "users_projects"
     id_project: Mapped[int_pk]
@@ -101,6 +99,7 @@ class AddUserProjectORM(Base):
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"
 
+#класс добавления пользователя к проекту
 class SAddUSer(BaseModel):
     id_project: int
     id_user: int
