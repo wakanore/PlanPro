@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from app.database import users
-from sqlalchemy import async_session_maker
-=======
->>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import update as sqlalchemy_update, delete as sqlalchemy_delete
@@ -15,35 +10,15 @@ class BaseDAO:
 
     @classmethod
     async def find_one_or_none_by_id(cls, data_id: int):
-        """
-        Асинхронно находит и возвращает один экземпляр модели по указанным критериям или None.
-
-        Аргументы:
-            data_id: Критерии фильтрации в виде идентификатора записи.
-
-        Возвращает:
-            Экземпляр модели или None, если ничего не найдено.
-        """
+        #Асинхронно находит и возвращает один экземпляр модели по указанным критериям или None.
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(id=data_id)
             result = await session.execute(query)
             return result.scalar_one_or_none()
 
-<<<<<<< HEAD
-class UsersDAO(BaseDAO):
-    model = SUser
-=======
     @classmethod
     async def find_one_or_none(cls, **filter_by):
-        """
-        Асинхронно находит и возвращает один экземпляр модели по указанным критериям или None.
-
-        Аргументы:
-            **filter_by: Критерии фильтрации в виде именованных параметров.
-
-        Возвращает:
-            Экземпляр модели или None, если ничего не найдено.
-        """
+        #Асинхронно находит и возвращает один экземпляр модели по указанным критериям или None.
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(**filter_by)
             result = await session.execute(query)
@@ -51,15 +26,7 @@ class UsersDAO(BaseDAO):
 
     @classmethod
     async def find_all(cls, **filter_by):
-        """
-        Асинхронно находит и возвращает все экземпляры модели, удовлетворяющие указанным критериям.
-
-        Аргументы:
-            **filter_by: Критерии фильтрации в виде именованных параметров.
-
-        Возвращает:
-            Список экземпляров модели.
-        """
+        #Асинхронно находит и возвращает все экземпляры модели, удовлетворяющие указанным критериям.
         async with async_session_maker() as session:
             query = select(cls.model).filter_by(**filter_by)
             result = await session.execute(query)
@@ -67,15 +34,7 @@ class UsersDAO(BaseDAO):
 
     @classmethod
     async def add(cls, **values):
-        """
-        Асинхронно создает новый экземпляр модели с указанными значениями.
-
-        Аргументы:
-            **values: Именованные параметры для создания нового экземпляра модели.
-
-        Возвращает:
-            Созданный экземпляр модели.
-        """
+        #Асинхронно создает новый экземпляр модели с указанными значениями.
         async with async_session_maker() as session:
             async with session.begin():
                 new_instance = cls.model(**values)
@@ -89,16 +48,7 @@ class UsersDAO(BaseDAO):
 
     @classmethod
     async def add_many(cls, instances: list[dict]):
-        """
-        Асинхронно создает несколько новых экземпляров модели с указанными значениями.
-
-        Аргументы:
-            instances: Список словарей, где каждый словарь содержит именованные параметры для создания нового
-            экземпляра модели.
-
-        Возвращает:
-            Список созданных экземпляров модели.
-        """
+        #Асинхронно создает несколько новых экземпляров модели с указанными значениями.
         async with async_session_maker() as session:
             async with session.begin():
                 new_instances = [cls.model(**values) for values in instances]
@@ -112,17 +62,7 @@ class UsersDAO(BaseDAO):
 
     @classmethod
     async def update(cls, filter_by, **values):
-        """
-        Асинхронно обновляет экземпляры модели, удовлетворяющие критериям фильтрации, указанным в filter_by,
-        новыми значениями, указанными в values.
-
-        Аргументы:
-            filter_by: Критерии фильтрации в виде именованных параметров.
-            **values: Именованные параметры для обновления значений экземпляров модели.
-
-        Возвращает:
-            Количество обновленных экземпляров модели.
-        """
+        #Асинхронно обновляет экземпляры модели, удовлетворяющие критериям фильтрации, указанным в filter_by,
         async with async_session_maker() as session:
             async with session.begin():
                 query = (
@@ -141,16 +81,7 @@ class UsersDAO(BaseDAO):
 
     @classmethod
     async def delete(cls, delete_all: bool = False, **filter_by):
-        """
-        Асинхронно удаляет экземпляры модели, удовлетворяющие критериям фильтрации, указанным в filter_by.
-
-        Аргументы:
-            delete_all: Если True, удаляет все экземпляры модели без фильтрации.
-            **filter_by: Критерии фильтрации в виде именованных параметров.
-
-        Возвращает:
-            Количество удаленных экземпляров модели.
-        """
+        #Асинхронно удаляет экземпляры модели, удовлетворяющие критериям фильтрации, указанным в filter_by.
         if delete_all is False:
             if not filter_by:
                 raise ValueError("Необходимо указать хотя бы один параметр для удаления.")
@@ -169,5 +100,5 @@ class UsersDAO(BaseDAO):
 
 class UsersDAO(BaseDAO):
     model = User
->>>>>>> 06bd7fd2e8abd184b5468c9f06afe30b9d8f26c5
+
 
