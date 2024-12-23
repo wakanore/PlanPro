@@ -1,9 +1,8 @@
 from typing import Annotated
 from sqlalchemy import MetaData, Table, Integer, String, Column, DateTime, ForeignKey, Boolean, func
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, mapped_column, DeclarativeBase, declared_attr, Mapped
-import sqlalchemy as sqlalchemy_package
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import sessionmaker, mapped_column, DeclarativeBase, declared_attr
 
 metadata = MetaData()
 
@@ -32,7 +31,6 @@ local_session = sessionmaker(autoflush=False,
 
 db = local_session()
 
-#Base = declarative_base()
 
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
@@ -78,6 +76,5 @@ users_projects = Table('users_projects', metadata,
     Column('id_project', ForeignKey('project.id')),
     Column('id_user', ForeignKey('users.id'))
 )
-
 
 
