@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from typing import Annotated
+from fastapi import  Response
 from fastui import AnyComponent, FastUI, prebuilt_html
 from fastui.components import Page, Table, ModelForm, Form
 from fastui.components.display import DisplayLookup
@@ -22,9 +23,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Mapped
 
 from app.database import async_session_maker, Base, int_pk
-from app.models import SAddUSer
-from app.routers import router as router_students
-
+from app.models import SAddUSer, SUserAuth, SUserRegister
+from app.routers import router as router_students, UserLogin, IncorrectEmailOrPasswordException, UserRegistr, \
+    UserAlreadyExistsException
+from app.users.auth import create_access_token, authenticate_user, get_password_hash
+from app.users.dao import UsersDAO
 
 app = FastAPI(title="PlanPro")
 
@@ -104,7 +107,83 @@ async def add_good(form: Annotated[CreateGood, fastui_form(CreateGood)]) -> Good
         await session.commit()
 
 
+
+
+
+
+@app.get('/api/login_bec', response_model_exclude_none=True)
+def get_goods() -> list[AnyComponent]:
+    return [
+        Page(
+            components=[
+                c.Heading(text='Login', level=2)
+            ]
+        )
+    ]
+
+
+@app.get('/api/login', response_model=FastUI, response_model_exclude_none=True)
+def add_good_form() -> AnyComponent:
+    return [
+        Page(
+            components=[
+                c.Heading(text='Login', level=2),
+                c.Button(text='Registration', on_click=GoToEvent(url='/registration')),
+                ModelForm(model=UserLogin, submit_url='/api/login_bec')
+            ]
+        )
+    ]
+
+
+@app.post('/api/login_bec', response_model_exclude_none=True)
+async def add_good(response: Response, form: Annotated[SUserAuth, fastui_form(SUserAuth)]):
+    check = await authenticate_user(phone_number=form.phone_number, password=form.password)
+    if check is None:
+        raise IncorrectEmailOrPasswordException
+    access_token = create_access_token({"sub": str(check.id)})
+    response.set_cookie(key="users_access_token", value=access_token, httponly=True)
+    return {'ok': True, 'access_token': access_token, 'refresh_token': None, 'message': 'Авторизация успешна!'}
+
+
+
+@app.get('/api/register_bec', response_model_exclude_none=True)
+def get_goods() -> list[AnyComponent]:
+    return [
+        Page(
+            components=[
+                c.Heading(text='Register', level=2)
+            ]
+        )
+    ]
+
+
+@app.get('/api/register', response_model=FastUI, response_model_exclude_none=True)
+def add_good_form() -> AnyComponent:
+    return [
+        Page(
+            components=[
+                c.Heading(text='Registration', level=2),
+                ModelForm(model=UserRegistr, submit_url='/api/register_bec')
+            ]
+        )
+    ]
+
+
+
+@app.post('/api/register_bec', response_model_exclude_none=True)
+async def add_good(form: Annotated[SUserRegister, fastui_form(SUserRegister)]):
+    user = await UsersDAO.find_one_or_none(phone_number=form.phone_number)
+    if user:
+        raise UserAlreadyExistsException
+    user_dict = form.dict()
+    user_dict['password'] = get_password_hash(form.password)
+    await UsersDAO.add(**user_dict)
+    return {'message': f'Вы успешно зарегистрированы!'}
+
+
 @app.get('/{path:path}')  # data /api/
 def root() -> HTMLResponse:
     return HTMLResponse(prebuilt_html(title='Fastui'))
+
+
 
