@@ -13,6 +13,7 @@ class SProjectAdd(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     done: Optional[bool] = False
+    id_user: int
 
 #класс для добавления проекта в бд
 class AddProjectORM(Base):
@@ -30,6 +31,14 @@ class AddProjectORM(Base):
 
 class STaskAdd(BaseModel):
     id: int
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    id_project: int
+    done: Optional[bool] = False
+
+class TaskAdd(BaseModel):
     name: str
     description: Optional[str] = None
     start_date: Optional[datetime] = None
@@ -90,8 +99,39 @@ class UserResponse(BaseModel):
     email: Optional[str] = None
 
 
-#класс для взаимодействия с бд при добавления пользователя к проекту
-class AddUserProjectORM(Base):
+
+#класс добавления пользователя к проекту
+class SAddUSer(BaseModel):
+    id_project: int
+    id_user: int
+
+
+class ProjectResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    done: bool
+    start_date: datetime
+    end_date: datetime
+
+
+class ProjectDeleteDone(BaseModel):
+    id: int
+
+class TaskDeleteDone(BaseModel):
+    name: str
+
+
+class Good(BaseModel):
+    id: int
+    name: str
+    price: int
+
+goods = [
+    Good(id=1, name='bread', price=50),
+]
+
+class AddGoodORM(Base):
     __tablename__ = "users_projects"
     id_project: Mapped[int_pk]
     id_user: Mapped[int_pk]
@@ -99,10 +139,46 @@ class AddUserProjectORM(Base):
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id})"
 
-#класс добавления пользователя к проекту
-class SAddUSer(BaseModel):
+
+#вход
+class UserLogin(BaseModel):
+    phone_number: str
+    password: str
+
+#регистрация
+class UserRegistr(BaseModel):
+    password: str
+    phone_number: str
+    name: str
+    description: Optional[str] = None
+
+
+class Project(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    done: Optional[bool] = False
+
+class Task(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     id_project: int
-    id_user: int
+    done: Optional[bool] = False
+
+
+class ProjectADD(BaseModel):
+    name: str
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    done: Optional[bool] = False
+
+
 
 
 
