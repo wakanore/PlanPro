@@ -29,6 +29,7 @@ IncorrectEmailOrPasswordException = HTTPException(status_code=status.HTTP_401_UN
 
 
 
+
 tasks = [
     Task(id=1, name='Атака', description='Подмена MAC-адреса', start_date=date(1990, 1, 1), end_date=date(1991, 1, 1), id_project=1, done=True),
     Task(id=2, name='Защита', description='MAC-security', start_date=date(1990, 1, 1), end_date=date(1991, 1, 1), id_project=1, done=True)
