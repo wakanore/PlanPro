@@ -21,6 +21,7 @@ from fastui.components.display import DisplayMode, DisplayLookup
 from fastui.events import GoToEvent, BackEvent
 from pydantic import BaseModel
 
+
 #список возможных ошибок
 UserAlreadyExistsException = HTTPException(status_code=status.HTTP_409_CONFLICT,
                                            detail='Пользователь уже существует')
